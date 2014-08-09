@@ -1,5 +1,5 @@
 package App::codefork;
-# ABSTRACT: World's dumbest code forker
+# ABSTRACT: Worlds dumbest code forker
 
 use Moo;
 use MooX::Options;
