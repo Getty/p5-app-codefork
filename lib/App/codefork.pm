@@ -14,15 +14,34 @@ option config => (
   doc => 'forking instructions'
 );
 
+=opt config
+
+Path to the config file containing forking instructions. Required.
+
+=cut
+
 option debug => (
   is => 'ro',
   doc => 'show debug informations'
 );
 
+=opt debug
+
+Show debug information during processing.
+
+=cut
+
 option dir => (
   is => 'lazy',
   doc => 'work directory'
 );
+
+=opt dir
+
+Work directory to process. Defaults to current directory.
+
+=cut
+
 
 sub _build_dir {
   my ( $self ) = @_;
@@ -32,6 +51,12 @@ sub _build_dir {
 has mods => (
   is => 'lazy',
 );
+
+=attr mods
+
+Parsed modification instructions from the config file. Built from C<config>.
+
+=cut
 
 sub _build_mods {
   my ( $self ) = @_;
@@ -91,27 +116,61 @@ sub work_on_dir {
   }
 }
 
+=method work_on_dir
+
+    $self->work_on_dir($directory);
+
+Recursively processes a directory, applying the configured modifications to
+filenames and file contents. Skips C<.git> and C<.svn> directories.
+
+=cut
+
 sub log {
   my ( $self, $text ) = @_;
   print $text."\n" if $self->debug;
 }
 
+=method log
+
+    $self->log($message);
+
+Prints a log message if C<debug> is enabled.
+
+=cut
+
+
 =encoding utf8
+
+=head1 SYNOPSIS
+
+    use App::codefork;
+
+    my $app = App::codefork->new_with_options;
+    # Automatically runs and processes directories
 
 =head1 DESCRIPTION
 
-Please see L<codefork>.
+App::codefork is a simple tool for forking code by performing systematic
+replacements in filenames and file contents across directory trees.
 
-=head1 SUPPORT
+For command-line usage, see L<codefork>.
 
-Repository
+=head1 CONFIG FILE FORMAT
 
-  https://github.com/Getty/p5-app-codefork
-  Pull request and additional contributors are welcome
- 
-Issue Tracker
+The config file contains replacement instructions, one per line:
 
-  https://github.com/Getty/p5-app-codefork/issues
+=over 4
+
+=item * C<from|to> - Replace regex pattern C<from> with C<to> (in filenames and contents)
+
+=item * C<from%to> - Replace whole word C<from> with C<to> (word boundaries enforced)
+
+=back
+
+Example config:
+
+    OldName|NewName
+    old_module%new_module
 
 =cut
 
