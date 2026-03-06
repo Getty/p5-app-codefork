@@ -1,6 +1,6 @@
 package App::codefork;
 # ABSTRACT: Worlds dumbest code forker
-
+our $VERSION = '1.001';
 use Moo;
 use Path::Tiny;
 use Text::Diff;
