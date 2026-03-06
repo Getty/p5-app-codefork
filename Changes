@@ -1,6 +1,6 @@
 Revision history for App-codefork
 
-{{$NEXT}}
+1.000     2026-03-06 17:14:40Z
     - BREAKING: New command-line interface, old --config/--dir/--debug flags removed
     - Diff-based workflow: preview changes before applying (safe by default)
     - New commands: apply, output (default: show diff)
