@@ -1,5 +1,13 @@
 Revision history for App-codefork
 
 {{$NEXT}}
-    - Update dist config to current @Author::GETTY standards
+    - BREAKING: New command-line interface, old --config/--dir/--debug flags removed
+    - Diff-based workflow: preview changes before applying (safe by default)
+    - New commands: apply, output (default: show diff)
+    - Default config file: fork.conf (no --config flag needed)
+    - Debug output via CODEFORK_DEBUG=1 environment variable
+    - Replaced IO::All with Path::Tiny
+    - Replaced MooX::Options with positional argument parsing
+    - Removed File::chdir dependency
+    - Added Text::Diff for unified diff generation
 

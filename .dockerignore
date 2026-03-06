@@ -1,0 +1,13 @@
+.git
+.gitignore
+.dockerignore
+*.tar.gz
+App-codefork-*
+docker-release.sh
+Dockerfile
+Changes
+cpanfile
+dist.ini
+eg
+t
+README.md
