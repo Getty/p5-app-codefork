@@ -1,0 +1,22 @@
+---
+claimed_at: 2026-10-21T20:39:59Z
+claimed_by: app-codefork-worker
+class: standard
+completed: 2026-10-21T20:39:59Z
+created: 2026-10-21T20:26:10Z
+id: 13
+priority: high
+started: 2026-10-21T20:32:46Z
+status: done
+tags:
+- bug
+- apply
+title: apply can still die halfway when a new parent path is a file
+updated: 2026-10-21T20:39:59Z
+---
+
+Found while fixing k10: Old/a.txt -> New/a.txt while a plain file New exists passes the plan check; apply then dies in mkpath after earlier changes were already written. The plan check (collect_changes) has to refuse a new path whose parent chain contains an existing non-directory that is not renamed away, so the run writes nothing. Test that the tree is untouched after the croak.
+
+2026-10-21 20:37 Done. lib: _check_changes refuses a new path whose parent is an existing non-directory not renamed away, or another change's new path; _apply_order waits on parents too (a parent file/empty dir renamed away moves first); new _parents helper, _remove_emptied_dirs now uses it; POD collect_changes + apply_changes. bin/codefork refusal sentence. Test t/parents.t (red at the k12 snapshot). Snapshots /tmp/claude-1000/-home-getty-dev-p5-app-codefork-c9c1dc2c-b3ff-4b36-85f2-3be117be70b2/scratchpad/snap/codefork.pm.k13, /tmp/claude-1000/-home-getty-dev-p5-app-codefork-c9c1dc2c-b3ff-4b36-85f2-3be117be70b2/scratchpad/snap/codefork.bin.k13. Commit third.
+
+2026-10-21 20:39 Committed as f78e701
