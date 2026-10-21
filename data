@@ -1,0 +1,37 @@
+---
+claimed_at: 2026-10-21T20:31:47Z
+claimed_by: app-codefork-worker
+class: standard
+completed: 2026-10-21T20:31:47Z
+created: 2026-10-21T20:00:35Z
+id: 7
+priority: medium
+started: 2026-10-21T20:00:53Z
+status: done
+tags:
+- dist
+- release
+title: 'Bring the dist to the current [@Author::GETTY] shape: dist.ini header, PruneFiles,
+  README, cpanfile, generated SUPPORT'
+updated: 2026-10-21T20:31:47Z
+---
+
+The dist predates the current bundle (installed: 0.326). Bring it to the shape of the freshly converted siblings (reference: ../p5-data-coloured, done 2026-10-21):
+- dist.ini: house metadata header (author = Torsten Raudssus <getty@cpan.org>, copyright_holder = Torsten Raudssus <torsten@raudssus.de> L<https://raudssus.de/>, copyright_year = 2026, aligned on =). Add [PruneFiles] for ^\.claude/ and ^\.worktreeinclude$ with the explaining comment as in data-coloured (the bundle snapshots the agent context into misc/agent-context/ anyway). No irc options: the old POD had no IRC channel, do not invent one.
+- cpanfile: drop the 0 pins (house rule: omit the version when not pinned).
+- POD of lib/App/codefork.pm and bin/codefork: drop the hand-written SUPPORT section, the bundle generates it. Do not touch the CONFIG description of the behaviour (the bugs are cards #1-#4).
+- README.md: Synopsis, Description, the config format as it is documented, License - as in the sibling.
+- .gitignore: add the Perl build artifact block of the sibling (/App-codefork-*, /.build/, /blib/, MYMETA, ...), keep the existing Claude/karr/skilletor lines.
+Done when dzil build is clean and the tarball holds neither .claude/ nor .worktreeinclude nor .github/.
+
+2026-10-21 20:02 Started: dist.ini header + PruneFiles, cpanfile pins, SUPPORT POD, README.md, .gitignore — layout from ../p5-data-coloured.
+
+2026-10-21 20:05 README.md describes the config format as documented (POD + core skill): one rule per line, first name rule wins, all content rules apply. The code does not deliver that until k1-k4 are fixed (config read as one blob) — README and POD will match once they land; no caveat added. No irc options (none in the old POD).
+
+2026-10-21 20:05 Done: dist.ini house header (getty@cpan.org, raudssus.de holder, 2026) + [PruneFiles] for ^\.claude/, ^\.worktreeinclude$ (and ^\.github/ for k6) with explaining comment; cpanfile without the 0 pins; hand-written SUPPORT removed from lib/App/codefork.pm and bin/codefork (CONFIG POD untouched); README.md (Synopsis, Description, Config, Installation, Author, License as in data-coloured); .gitignore in the sibling layout with the Perl build artifact and editor blocks, old App-codefork-*/.build lines folded into it. Verified: dzil build clean, tarball holds no .claude/, .worktreeinclude, .github/, .travis.yml; misc/agent-context/ present; built POD has exactly one generated SUPPORT per file; podchecker OK; dzil test + --release PASS. Files: dist.ini, cpanfile, lib/App/codefork.pm + bin/codefork (SUPPORT hunks), README.md (A), .gitignore, Changes (SUPPORT, tarball, README entries).
+
+REDO ON MAIN: dist.ini on main already has [PruneFiles] filename = Dockerfile/docker-release.sh/.dockerignore/README.md and [Run::AfterRelease] for the Docker image - keep both. Remaining: house metadata header, add match = ^\.claude/ and ^\.worktreeinclude$ (+ comment), cpanfile without 0 pins (Moo, Path::Tiny, Text::Diff), drop the hand-written SUPPORT POD in bin/codefork, .gitignore: sibling build block + the karr/skilletor/worktree lines of the backup branch. README.md exists on main - leave it.
+
+2026-10-21 20:19 Done on main: dist.ini house header (getty@cpan.org, holder with raudssus.de link, copyright_year 2026, aligned on =); [PruneFiles] keeps Dockerfile/docker-release.sh/.dockerignore/README.md, adds match ^\.claude/, ^\.worktreeinclude$, ^\.github/ with one explaining comment; [Run::AfterRelease] kept; no irc options. cpanfile: 0 pins dropped. bin/codefork: hand-written =head1 SUPPORT removed (lib/App/codefork.pm on main has none — not touched, other worker's file). .gitignore: sibling layout — Claude/karr/skilletor/worktree block from the backup, Perl build artifacts (/App-codefork-*, /.build/, /blib/, MYMETA, ...), editor/OS; no tracked file is ignored. README.md left as on main. Verified: dzil build clean; tarball holds no Docker files, .claude/, .worktreeinclude, .github/; misc/agent-context/ present; exactly one generated SUPPORT in each of bin/codefork and lib/App/codefork.pm; podchecker OK; prove -lr t/ and dzil test --release PASS; dzil clean run. Also found: .gitignore ships in the tarball (as in data-coloured) — not in scope of any card. Also found: .claude/skills/perl-release-dist-ini is staged as deleted but present on disk, so misc/agent-context/ snapshots it — orchestrator's tree.
+
+2026-10-21 20:31 Committed as 0ed7ff4
