@@ -56,12 +56,15 @@ action and is completely safe — nothing is modified on disk.
 =item C<codefork apply> [I<config>]
 
 Apply all changes to files in the current directory tree. Filenames are
-renamed and file contents are modified in place; a rewritten file keeps its
-file mode.
+renamed and file contents are modified in place: a rewritten file stays the
+same file, so its owner, group, mode and hard links are kept. A directory
+created for a rename takes the mode (and, where permitted, the owner and group)
+of the one it replaces.
 
 Before anything is written, codefork refuses a run in which a rename would
 overwrite an existing file, two files would get the same name, a file would
-need a directory where a file is, or renames would form a cycle. Directories
+need a directory where a file is, renames would form a cycle, or a file to
+rewrite is not writable. Directories
 left empty by the renames are removed; an empty directory whose name matches a
 rule is renamed.
 

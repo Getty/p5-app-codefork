@@ -91,8 +91,8 @@ on both sides, so it is renamed like a file and shows in the diff as a rename.
 Croaks, before anything is written, when the plan would lose a file or could
 not be applied: a new path that already exists and is not itself renamed away,
 a new path that two changes share, a new path below an existing file that is
-not renamed away or below another change's new path, or renames that form a
-cycle.
+not renamed away or below another change's new path, renames that form a
+cycle, or a file whose content changes but which is not writable.
 
 =cut
 
@@ -120,6 +120,10 @@ sub _check_changes {
       push @problems, $new_path.' (from '.$from[0].') needs a directory '.$parent.', which is '.$blocker;
       last;
     }
+  }
+  for my $change ( grep { $_->{old_content} ne $_->{new_content} } @$changes ) {
+    push @problems, $change->{old_path}.' can not be rewritten in place, it is not writable'
+      unless -w $self->dir->child( $change->{old_path} );
   }
   croak __PACKAGE__.' refuses the plan, nothing was written:'."\n"
     .join( "\n", map { '  '.$_ } @problems ) if @problems;
@@ -252,40 +256,88 @@ is not passed, calls L</collect_changes> automatically.
 sub apply_changes {
   my ($self, $changes) = @_;
   $changes //= $self->collect_changes;
+  my %made;
   for my $change ( @{ $self->_check_changes($changes) } ) {
     my $old = $self->dir->child($change->{old_path});
     my $new = $self->dir->child($change->{new_path});
     my $renamed = $change->{old_path} ne $change->{new_path};
     my $modified = $change->{old_content} ne $change->{new_content};
 
-    $new->parent->mkpath if $renamed;
+    $self->_make_parents( $change, \%made ) if $renamed;
 
     if ($modified) {
-      $self->log("modify: $change->{new_path}");
-      $self->_write_file( $old, $new, $change->{new_content} );
-      if ($renamed) {
-        $self->log("rename: $change->{old_path} -> $change->{new_path}");
-        $old->remove;
-      }
-    } elsif ($renamed) {
+      $self->log("modify: $change->{old_path}");
+      $self->_write_file( $old, $change->{new_content} );
+    }
+    if ($renamed) {
       $self->log("rename: $change->{old_path} -> $change->{new_path}");
       $old->move($new);
     }
   }
+  $self->_take_dir_attributes( \%made );
   $self->_remove_emptied_dirs($changes);
   return scalar @$changes;
 }
 
 sub _write_file {
-  my ( $self, $old, $new, $content ) = @_;
-  # starts as 0600, takes the old mode, then replaces the new path in one rename
-  my $temp = Path::Tiny->tempfile(
+  my ( $self, $file, $content ) = @_;
+  # the new content goes into the existing inode: owner, group, mode, hard
+  # links, ACLs and xattrs stay; a 0600 backup covers a write that fails
+  my $backup = Path::Tiny->tempfile(
     TEMPLATE => '.codefork-XXXXXXXX',
-    DIR      => $new->parent->stringify,
+    DIR      => $file->parent->stringify,
+    UNLINK   => 0,
   );
-  $temp->append_raw($content);
-  $temp->chmod( $old->stat->mode & 07777 );
-  $temp->move($new);
+  my $copied = eval { $backup->append_raw( $file->slurp_raw ); 1 };
+  unless ($copied) {
+    my $error = $@;
+    $backup->remove;
+    croak __PACKAGE__.'->apply_changes could not back up '.$file.', it is untouched: '.$error;
+  }
+  my $written = eval { $self->_overwrite( $file, $content ); 1 };
+  unless ($written) {
+    my $error = $@;
+    $error =~ s/\s+\z//;
+    my $restored = eval { $self->_overwrite( $file, $backup->slurp_raw ); 1 };
+    croak __PACKAGE__.'->apply_changes could not rewrite '.$file.': '.$error.'; '
+      .( $restored ? 'the original content is restored, a copy stays in ' : 'the original content is in ' )
+      .$backup;
+  }
+  $backup->remove;
+  return;
+}
+
+sub _overwrite {
+  my ( $self, $file, $content ) = @_;
+  my $fh = $file->openrw_raw;
+  truncate $fh, 0 or croak 'truncate '.$file.': '.$!;
+  print {$fh} $content or croak 'write '.$file.': '.$!;
+  close $fh or croak 'close '.$file.': '.$!;
+  return;
+}
+
+sub _make_parents {
+  my ( $self, $change, $made ) = @_;
+  my @new = reverse $self->_parents( $change->{new_path} );
+  my @old = reverse $self->_parents( $change->{old_path} );
+  for my $i ( 0 .. $#new ) {
+    my $dir = $self->dir->child( $new[$i] );
+    next if -d $dir;
+    $dir->mkpath;
+    # the directory it replaces, when the depth tells which one that is
+    $made->{ $new[$i] } = @old == @new ? $self->dir->child( $old[$i] )->stat : undef;
+  }
+  return;
+}
+
+sub _take_dir_attributes {
+  my ( $self, $made ) = @_;
+  for my $rel ( sort { ( $b =~ tr{/}{} ) <=> ( $a =~ tr{/}{} ) || $a cmp $b } keys %$made ) {
+    my $stat = $made->{$rel} or next;
+    my $dir  = $self->dir->child($rel)->stringify;
+    chown $stat->uid, $stat->gid, $dir or chown -1, $stat->gid, $dir;    # as far as permitted
+    chmod $stat->mode & 07777, $dir or croak __PACKAGE__.'->apply_changes can not chmod '.$rel.': '.$!;
+  }
   return;
 }
 
@@ -311,9 +363,18 @@ sub _remove_emptied_dirs {
 Applies the collected changes to disk. Returns the number of changes applied.
 The plan is checked again before the first write and refused the same way as
 in L</collect_changes>; a file is renamed only after the file or directory in
-its way has been renamed away. A rewritten file keeps the mode of the old file. A directory
-the renames left empty is removed afterwards, deepest first; a directory that
-still holds something stays.
+its way has been renamed away.
+
+A file keeps everything but its content and its name: the new content is
+written into the existing file, and a rename moves that file. Owner, group,
+mode, hard links, ACLs and extended attributes stay as they were. Before the
+write, the old content is copied to a hidden C<.codefork-*> backup next to the
+file (mode 0600), which is removed once the write succeeded; when the write
+fails, the original content is restored from it and apply croaks naming the
+backup. A directory created for a rename takes the mode of the directory it
+replaces, and its owner and group as far as permitted. A directory the renames
+left empty is removed afterwards, deepest first; a directory that still holds
+something stays.
 
 =cut
 

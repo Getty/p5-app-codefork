@@ -132,7 +132,9 @@ App::codefork refuses the plan, nothing was written:
   in a safe order.
 - **The config stays put.** `fork.conf` inside the tree is never rewritten or
   renamed.
-- **File modes are kept.** Executables stay executable and private files stay
+- **Files stay the same files.** New content is written into the existing
+  file, so owner, group, mode and hard links are kept, even when codefork
+  runs as root in Docker. Executables stay executable and private files stay
   private.
 - **Bytes stay bytes.** Contents are never decoded or re-encoded, so UTF-8,
   Latin-1 and binary files come out exactly as they went in, apart from your

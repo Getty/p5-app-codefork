@@ -25,8 +25,13 @@ Revision history for App-codefork
     file and the second of two words separated by a single character.
   - The config file is never rewritten or renamed, even when it lies inside
     the tree, as the default fork.conf does.
-  - A rewritten file keeps its file mode: executable scripts stay executable
-    and private files stay private.
+  - apply writes new content into the existing file, so owner, group, mode,
+    hard links, ACLs and extended attributes are kept; docker run ... apply
+    leaves no root-owned files on the host. A failed write restores the
+    original from a backup and names it. Directories created for a rename
+    take the mode and, where permitted, the owner and group of the directory
+    they replace. A file to rewrite that is not writable is refused before
+    anything is written.
   - codefork refuses, before writing anything, a rename that needs a
     directory where a file is, or where another file is renamed to.
   - bin/codefork no longer adds <bindir>/../lib to the module search path,
