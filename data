@@ -1,0 +1,76 @@
+{"action":"create","agent":"Torsten Raudssus","detail":"backlog","task_id":1,"ts":"2026-10-21T02:14:58Z"}
+{"action":"create","agent":"Torsten Raudssus","detail":"backlog","task_id":2,"ts":"2026-10-21T02:15:08Z"}
+{"action":"create","agent":"Torsten Raudssus","detail":"backlog","task_id":3,"ts":"2026-10-21T02:15:49Z"}
+{"action":"create","agent":"Torsten Raudssus","detail":"backlog","task_id":4,"ts":"2026-10-21T02:15:53Z"}
+{"action":"create","agent":"Torsten Raudssus","detail":"backlog","task_id":5,"ts":"2026-10-21T02:15:57Z"}
+{"action":"create","agent":"Torsten Raudssus","detail":"backlog","task_id":6,"ts":"2026-10-21T02:16:01Z"}
+{"action":"edit","agent":"Torsten Raudssus","detail":"backlog","task_id":5,"ts":"2026-10-21T02:40:18Z"}
+{"action":"edit","agent":"Torsten Raudssus","detail":"backlog","task_id":5,"ts":"2026-10-21T02:41:17Z"}
+{"action":"create","agent":"Torsten Raudssus","detail":"backlog","task_id":7,"ts":"2026-10-21T20:00:35Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"in-progress","task_id":5,"ts":"2026-10-21T20:00:44Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"in-progress","task_id":6,"ts":"2026-10-21T20:00:49Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"in-progress","task_id":7,"ts":"2026-10-21T20:00:53Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"in-progress","task_id":6,"ts":"2026-10-21T20:01:13Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"in-progress","task_id":6,"ts":"2026-10-21T20:02:08Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"in-progress","task_id":7,"ts":"2026-10-21T20:02:19Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"in-progress","task_id":5,"ts":"2026-10-21T20:02:53Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"in-progress","task_id":6,"ts":"2026-10-21T20:05:14Z"}
+{"action":"handoff","agent":"app-codefork-worker","detail":"review","task_id":6,"ts":"2026-10-21T20:05:19Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"in-progress","task_id":5,"ts":"2026-10-21T20:05:30Z"}
+{"action":"handoff","agent":"app-codefork-worker","detail":"review","task_id":5,"ts":"2026-10-21T20:05:34Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"in-progress","task_id":7,"ts":"2026-10-21T20:05:45Z"}
+{"action":"handoff","agent":"app-codefork-worker","detail":"review","task_id":7,"ts":"2026-10-21T20:05:50Z"}
+{"action":"edit","agent":"Torsten Raudssus","detail":"backlog","task_id":1,"ts":"2026-10-21T20:14:11Z"}
+{"action":"move","agent":"Torsten Raudssus","detail":"done","task_id":1,"ts":"2026-10-21T20:14:16Z"}
+{"action":"edit","agent":"Torsten Raudssus","detail":"backlog","task_id":2,"ts":"2026-10-21T20:14:20Z"}
+{"action":"move","agent":"Torsten Raudssus","detail":"done","task_id":2,"ts":"2026-10-21T20:14:25Z"}
+{"action":"edit","agent":"Torsten Raudssus","detail":"backlog","task_id":3,"ts":"2026-10-21T20:14:29Z"}
+{"action":"edit","agent":"Torsten Raudssus","detail":"backlog","task_id":4,"ts":"2026-10-21T20:14:34Z"}
+{"action":"edit","agent":"Torsten Raudssus","detail":"backlog","task_id":3,"ts":"2026-10-21T20:14:49Z"}
+{"action":"create","agent":"Torsten Raudssus","detail":"backlog","task_id":8,"ts":"2026-10-21T20:14:53Z"}
+{"action":"create","agent":"Torsten Raudssus","detail":"backlog","task_id":9,"ts":"2026-10-21T20:14:58Z"}
+{"action":"create","agent":"Torsten Raudssus","detail":"backlog","task_id":10,"ts":"2026-10-21T20:15:02Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"review","task_id":5,"ts":"2026-10-21T20:16:33Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"review","task_id":6,"ts":"2026-10-21T20:16:38Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"review","task_id":7,"ts":"2026-10-21T20:16:42Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"in-progress","task_id":5,"ts":"2026-10-21T20:16:47Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"in-progress","task_id":6,"ts":"2026-10-21T20:16:51Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"in-progress","task_id":7,"ts":"2026-10-21T20:16:56Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"in-progress","task_id":3,"ts":"2026-10-21T20:17:01Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"in-progress","task_id":4,"ts":"2026-10-21T20:17:05Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"in-progress","task_id":8,"ts":"2026-10-21T20:17:10Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"in-progress","task_id":9,"ts":"2026-10-21T20:17:14Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"in-progress","task_id":10,"ts":"2026-10-21T20:17:18Z"}
+{"action":"handoff","agent":"app-codefork-worker","detail":"review","task_id":5,"ts":"2026-10-21T20:18:49Z"}
+{"action":"handoff","agent":"app-codefork-worker","detail":"review","task_id":6,"ts":"2026-10-21T20:18:58Z"}
+{"action":"handoff","agent":"app-codefork-worker","detail":"review","task_id":7,"ts":"2026-10-21T20:19:08Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"in-progress","task_id":10,"ts":"2026-10-21T20:20:32Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"in-progress","task_id":9,"ts":"2026-10-21T20:20:55Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"in-progress","task_id":8,"ts":"2026-10-21T20:21:44Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"in-progress","task_id":4,"ts":"2026-10-21T20:22:18Z"}
+{"action":"handoff","agent":"app-codefork-worker","detail":"review","task_id":10,"ts":"2026-10-21T20:24:28Z"}
+{"action":"handoff","agent":"app-codefork-worker","detail":"review","task_id":9,"ts":"2026-10-21T20:24:32Z"}
+{"action":"handoff","agent":"app-codefork-worker","detail":"review","task_id":8,"ts":"2026-10-21T20:24:36Z"}
+{"action":"handoff","agent":"app-codefork-worker","detail":"review","task_id":4,"ts":"2026-10-21T20:24:40Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"in-progress","task_id":3,"ts":"2026-10-21T20:24:44Z"}
+{"action":"handoff","agent":"app-codefork-worker","detail":"review","task_id":3,"ts":"2026-10-21T20:24:49Z"}
+{"action":"create","agent":"Torsten Raudssus","detail":"backlog","task_id":11,"ts":"2026-10-21T20:26:01Z"}
+{"action":"create","agent":"Torsten Raudssus","detail":"backlog","task_id":12,"ts":"2026-10-21T20:26:06Z"}
+{"action":"create","agent":"Torsten Raudssus","detail":"backlog","task_id":13,"ts":"2026-10-21T20:26:10Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"review","task_id":3,"ts":"2026-10-21T20:31:04Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"done","task_id":3,"ts":"2026-10-21T20:31:09Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"review","task_id":4,"ts":"2026-10-21T20:31:13Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"done","task_id":4,"ts":"2026-10-21T20:31:18Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"review","task_id":5,"ts":"2026-10-21T20:31:22Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"done","task_id":5,"ts":"2026-10-21T20:31:27Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"review","task_id":6,"ts":"2026-10-21T20:31:33Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"done","task_id":6,"ts":"2026-10-21T20:31:38Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"review","task_id":7,"ts":"2026-10-21T20:31:42Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"done","task_id":7,"ts":"2026-10-21T20:31:47Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"review","task_id":8,"ts":"2026-10-21T20:31:53Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"done","task_id":8,"ts":"2026-10-21T20:31:57Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"review","task_id":9,"ts":"2026-10-21T20:32:02Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"done","task_id":9,"ts":"2026-10-21T20:32:07Z"}
+{"action":"edit","agent":"app-codefork-worker","detail":"review","task_id":10,"ts":"2026-10-21T20:32:12Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"done","task_id":10,"ts":"2026-10-21T20:32:16Z"}
+{"action":"move","agent":"app-codefork-worker","detail":"in-progress","task_id":11,"ts":"2026-10-21T20:32:37Z"}
