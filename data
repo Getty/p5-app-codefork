@@ -1,0 +1,34 @@
+---
+class: standard
+completed: 2026-10-21T20:14:16Z
+created: 2026-10-21T02:14:58Z
+id: 1
+priority: high
+started: 2026-10-21T20:14:16Z
+status: done
+tags:
+- bug
+- config
+title: The config file is parsed as one blob - the documented sample config cannot
+  work
+updated: 2026-10-21T20:14:16Z
+---
+
+In _build_mods the config is read with io(config)->slurp. slurp returns the whole file as one string, and the map over it therefore produces one rule instead of one rule per line.
+
+The sample config eg/conf has three lines:
+
+    HomeHive|AqHive
+    homehive|aqhive
+    hh%ah
+
+Parsed as one blob, the first rule gets the from-part HomeHive and a to-part that contains the line breaks and the other two rules inside it. The tool therefore never behaves as its own documentation describes.
+
+Work:
+- split the file into lines before mapping over them (IO::All gives the lines directly, or split the slurped content on newlines)
+- one rule per line: the kind, the from-part and the to-part
+- a line that is empty or only whitespace is skipped; a line with neither a pipe nor a percent is a rule of an unknown kind and has to be reported instead of silently dropped
+- the log line in BUILD prints the from-part and the to-part of every rule; it must not warn on a malformed rule
+- add a test that parses a config with more than one rule and pins the number of rules and their content
+
+Obsolete: the card was written against the 2014 code on origin/master. On main (release 1.000, rewrite of 2026-03-06) the config is read with Path::Tiny lines({chomp=>1}), one rule per line, split with limit 2. Nothing to do.
