@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 # PODNAME: codefork
 # ABSTRACT: Worlds dumbest code forker
+our $VERSION = '1.001';
 
 use strict;
 use warnings;
