@@ -37,8 +37,10 @@ only skipped because it has no separator.
    `.git` and `.svn`, and returns change hashrefs (`old_path`, `new_path`,
    `old_content`, `new_content`; paths relative to `dir`). Nothing touches disk.
    The plan is checked before it is returned: a new path that already exists and is
-   not renamed away, a new path two changes share, or a cycle of renames is refused
-   with a croak — the run writes nothing.
+   not renamed away, a new path two changes share, a new path below an existing file
+   that is not renamed away or below another change's new path, or a cycle of renames
+   is refused with a croak — the run writes nothing. The walk skips the config file
+   itself (same real path as `config`), so it is never part of a change.
 2. **Names**: every replace rule, top to bottom, each on the output of the previous
    one; a directory's new name becomes the prefix of every path below it.
 3. **Content**: every rule, top to bottom, on the raw bytes. A file is a change when
@@ -47,8 +49,10 @@ only skipped because it has no separator.
 4. **Diff** — `generate_diff` renders a unified diff (Text::Diff), with
    `rename from/to` headers for renamed files.
 5. **Apply** — `apply_changes` checks the plan again and writes it in an order that
-   moves a file out of the way before another takes its path: new content to the new
-   path, old file removed; a pure rename is a move. Directories the renames left empty
+   moves the file or directory in a new path's way, or in its parent chain, first.
+   New content goes through a 0600 temp file in the target directory that takes the
+   old file's mode and is renamed into place, then the old file is removed; a pure
+   rename is a move and keeps its mode. Directories the renames left empty
    are removed afterwards, deepest first. Returns the number of changes.
 6. **CLI** — `run(@ARGV)`, positional: `codefork [conf]` (diff, default `fork.conf`),
    `codefork apply [conf]`, `codefork output [conf] file`. It works on the cwd. Debug
