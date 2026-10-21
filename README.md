@@ -59,7 +59,7 @@ hh%ah
 ```
 
 - `from|to` — regex replacement (`s/from/to/g`) in filenames and contents
-- `from%to` — word-boundary replacement (only matches when surrounded by non-alphanumeric characters)
+- `from%to` — whole-word replacement in contents only (matches only where no letter or digit comes directly before or after it; the start and end of a file count as a boundary)
 
 ## Debug
 

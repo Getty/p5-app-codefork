@@ -159,7 +159,7 @@ sub _collect_dir {
         if ($cmd eq 'replace') {
           $new_content =~ s/$from/$to/g;
         } elsif ($cmd eq 'word') {
-          $new_content =~ s/([^A-Za-z0-9]+)$from([^A-Za-z0-9]+)/$1$to$2/g;
+          $new_content =~ s/(?<![A-Za-z0-9])$from(?![A-Za-z0-9])/$to/g;
         }
       }
 
@@ -395,7 +395,7 @@ one per line:
 
 =item * C<from|to> - Replace regex pattern C<from> with C<to> in filenames and file contents
 
-=item * C<from%to> - Replace whole word C<from> with C<to> (non-alphanumeric boundaries enforced, so C<hh> won't match inside C<ohhh>)
+=item * C<from%to> - Replace whole word C<from> with C<to> in file contents only. C<from> matches only where no letter or digit (C<A-Z>, C<a-z>, C<0-9>) comes directly before or after it, so C<hh> won't match inside C<ohhh>; the start and the end of a file count as a boundary
 
 =back
 

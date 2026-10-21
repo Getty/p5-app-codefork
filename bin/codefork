@@ -83,8 +83,9 @@ Regex replacement: applies C<s/from/to/g> to filenames and file contents.
 
 =item C<from%to>
 
-Word-boundary replacement: only replaces C<from> when surrounded by
-non-alphanumeric characters, preventing partial matches inside longer words.
+Whole-word replacement in file contents only: replaces C<from> only where no
+letter or digit comes directly before or after it, so C<hh> never matches
+inside C<ohhh>. The start and the end of a file count as a boundary.
 
 =back
 

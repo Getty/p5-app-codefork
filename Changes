@@ -18,6 +18,8 @@ Revision history for App-codefork
     UTF-8 encoded twice, so the diff did not apply with patch -p1.
   - apply removes the directories a rename left empty. An empty directory
     whose name matches a rule is renamed and shown in the diff.
+  - The word rule (from%to) also replaces a word at the start or end of a
+    file and the second of two words separated by a single character.
 
 1.000     2026-03-06 17:14:40Z
     - BREAKING: New command-line interface, old --config/--dir/--debug flags removed
