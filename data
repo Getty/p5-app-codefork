@@ -1,0 +1,34 @@
+---
+claimed_at: 2026-10-21T21:38:19Z
+claimed_by: app-codefork-worker
+class: standard
+completed: 2026-10-21T21:38:19Z
+created: 2026-10-21T20:38:21Z
+id: 14
+priority: high
+started: 2026-10-21T21:33:05Z
+status: done
+tags:
+- apply
+title: apply changes owner, breaks hard links and loses directory owner/mode
+updated: 2026-10-21T21:38:19Z
+---
+
+apply must leave everything about a file as it was except its content and its name. Today it does not:
+- OWNER/GROUP: a rewritten file is a new file (temp file renamed into place, since k12), so it belongs to whoever runs codefork. The documented Docker usage (docker run -v "$PWD:/work" raudssus/codefork apply) runs as root in the container, so every rewritten file on the host ends up owned by root. That is the normal case, not an edge case.
+- HARD LINKS: the rename replaces the inode, so a second hard link silently keeps the old content and the two names are no longer the same file.
+- DIRECTORIES: for a renamed directory, apply mkpaths the new directory (owner = runner, mode = umask) and moves the files one by one; owner and mode of the original directory are lost.
+
+Work (test each, failing first, own temp tree):
+- keep owner and group of a rewritten file: chown the temp file to the old uid/gid before the rename. When that is not permitted (not root, file owned by someone else) or the file has more than one hard link (nlink > 1), write the new content into the existing inode instead (open read-write, truncate, write) - that keeps owner, group, mode and links. Renamed+modified files get the same treatment, then the rename is a move of that inode.
+- a directory created for a rename takes mode and (when permitted) owner/group of the directory it replaces.
+- tests: hard link survives (both names show the new content, same inode); mode and group preserved; the chown path can only be fully tested as root - test it when $> == 0, skip otherwise with a reason, and test the fallback path by forcing it.
+- document in POD/README: apply keeps owner, group, mode and hard links.
+
+DESIGN DECISION (maintainer): write into the existing inode with a backup copy for crash safety - copy old file to a 0600 backup in the same dir, truncate+write the original, remove the backup only on success, restore from it on failure. Renamed+modified: write in place, then rename(2). Replaces the chown/fallback plan above; keeps owner, group, mode, hard links, ACLs, xattrs by construction. Directory owner/mode on rename stays in scope.
+
+2026-10-21 21:36 Implemented the maintainer's design (in-place + backup), not the card's chown/nlink plan - a first draft along the card was abandoned before any code. lib/App/codefork.pm: _write_file copies the old content to a 0600 .codefork-XXXXXXXX backup next to the file, _overwrite (openrw_raw, truncate, print, close - each checked) writes the new content into the existing inode, the backup is removed after success; on failure the content is restored from the backup and apply croaks naming it (backup kept). Renamed+modified: write in place, then move. apply: _make_parents creates missing parents level by level remembering the stat of the dir each replaces (same depth), _take_dir_attributes sets mode and, as far as permitted, owner/group, deepest first. Plan check (added so apply never dies halfway on a predictable error): a file whose content changes but is not writable is refused. Test t/11-owner.t: 15 asserts red on main (hard links in/outside, inode kept, mode+group kept via a second group of the runner, dir mode/group, read-only refused, mocked write failure restores + names backup); root-owner block skipped as non-root, sudo -n not available (password required). POD apply_changes/collect_changes, bin/codefork apply item, README 'Safe by design' bullet. prove -lr t/ 144 green, dzil test --release green (11-owner.t joins once tracked), dzil clean.
+
+2026-10-21 21:37 Done, see the implementation note. One commit: lib/App/codefork.pm, t/11-owner.t, bin/codefork, README.md.
+
+2026-10-21 21:38 Committed as d8a675b
