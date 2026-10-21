@@ -106,4 +106,33 @@ $other->spew_raw("Old|New\n");
   ok( $tree->child('Old.txt')->exists, 'nothing written' );
 }
 
+{
+  my $tree = Path::Tiny->tempdir;
+  $tree->child('A.txt')->spew_raw("one\n");
+  $tree->child('B.txt')->spew_raw("two\n");
+  $tree->child('fork.conf')->spew_raw("A|B\n");
+  my $refusal = "App::codefork refuses the plan, nothing was written:\n"
+    ."  B.txt (from A.txt) already exists\n";
+  for my $args ( [], ['apply'], [ 'output', $confdir->child('refused.diff')->stringify ] ) {
+    my $command = @$args ? $args->[0] : 'diff';
+    my ( $stdout, $error ) = run_in( $tree, @$args );
+    is( $error, $refusal, $command.': a refused plan dies with the refusal, no file and line' );
+    is( $stdout, '', $command.': nothing on STDOUT' );
+  }
+  is( $tree->child('B.txt')->slurp_raw, "two\n", 'the refused plan wrote nothing' );
+  eval { App::codefork->new( config => $tree->child('fork.conf'), dir => $tree )->collect_changes };
+  like( $@, qr/already exists at \S+ line \d+\.$/, 'the library API still croaks with file and line' );
+  ok( !$confdir->child('refused.diff')->exists, 'not even the output file' );
+
+  my $script = path(__FILE__)->absolute->parent->parent->child('bin/codefork');
+  my $lib    = $script->parent->parent->child('lib');
+  my $cwd    = Path::Tiny->cwd;
+  chdir $tree or die 'chdir '.$tree.': '.$!;
+  my $output = qx{'$^X' '-I$lib' '$script' apply 2>&1};
+  my $status = $? >> 8;
+  chdir $cwd or die 'chdir '.$cwd.': '.$!;
+  isnt( $status, 0, 'codefork exits non-zero on a refused plan' );
+  is( $output, $refusal, 'codefork prints only the refusal' );
+}
+
 done_testing;

@@ -356,32 +356,48 @@ sub run {
   die "Config file '$config' not found\n" unless -f $config;
 
   my $app = $class->new(config => $config);
-  my $changes = $app->collect_changes;
-
-  if ($command eq 'diff') {
-    my $diff = $app->generate_diff($changes);
-    if (length $diff) {
-      print $diff;
-    } else {
-      print "No changes.\n";
-    }
-  } elsif ($command eq 'apply') {
-    my $count = $app->apply_changes($changes);
-    print "Applied $count change(s).\n";
-  } elsif ($command eq 'output') {
-    my $diff = $app->generate_diff($changes);
-    path($output_file)->spew_raw($diff);
-    print "Wrote diff to $output_file\n";
-  }
+  my ( undef, $file, $line ) = caller;
+  my $ok = eval { $app->_run_command( $command, $output_file ); 1 };
+  return if $ok;
+  # a croak of this class points at the caller of run - the CLI shows the message only
+  my $error = $@;
+  my $at    = ' at '.$file.' line '.$line.".\n";
+  $error = substr( $error, 0, -length $at )."\n"
+    if length $error > length $at && substr( $error, -length $at ) eq $at;
+  die $error;
 }
 
 =method run
 
     App::codefork->run(@ARGV);
 
-CLI entry point. Parses arguments and executes the appropriate command.
+CLI entry point. Parses arguments and executes the appropriate command. When
+the plan is refused (see L</collect_changes>), it dies with the refusal alone,
+without the file and line a croak adds, so the CLI exits non-zero and prints
+just the message.
 
 =cut
+
+sub _run_command {
+  my ( $self, $command, $output_file ) = @_;
+  my $changes = $self->collect_changes;
+
+  if ($command eq 'diff') {
+    my $diff = $self->generate_diff($changes);
+    if (length $diff) {
+      print $diff;
+    } else {
+      print "No changes.\n";
+    }
+  } elsif ($command eq 'apply') {
+    my $count = $self->apply_changes($changes);
+    print "Applied $count change(s).\n";
+  } elsif ($command eq 'output') {
+    my $diff = $self->generate_diff($changes);
+    path($output_file)->spew_raw($diff);
+    print "Wrote diff to $output_file\n";
+  }
+}
 
 =encoding utf8
 
