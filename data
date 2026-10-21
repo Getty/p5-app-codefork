@@ -1,0 +1,25 @@
+---
+claimed_at: 2026-10-21T20:32:07Z
+claimed_by: app-codefork-worker
+class: standard
+completed: 2026-10-21T20:32:07Z
+created: 2026-10-21T20:14:58Z
+id: 9
+priority: high
+started: 2026-10-21T20:17:14Z
+status: done
+tags:
+- bug
+- output
+title: codefork output double-encodes UTF-8 content
+updated: 2026-10-21T20:32:07Z
+---
+
+On main: run() writes the diff with path($file)->spew_utf8($diff). The diff is built from slurp_raw bytes, so it is a byte string; spew_utf8 encodes it again. A file containing "ä" (c3 a4) ends up as c3 83 c2 a4 in the output file - the diff no longer applies with patch -p1, which the POD promises. The diff printed to STDOUT is fine (raw).
+Work: write the diff raw (spew_raw), test with a non-ASCII file that the output file holds the original bytes.
+
+2026-10-21 20:20 t/output.t written first: runs App::codefork->run('output', file) chdir'd into its own temp tree (cwd restored), file with 'ä' (c3 a4). Failed 3 asserts on main (c3 83 c2 a4 in the file). Fix: run() writes the diff with spew_raw instead of spew_utf8 (one line). Green; probe: the written diff applies with patch -p1 and the file keeps c3 a4.
+
+2026-10-21 20:24 Done. lib/App/codefork.pm run(): spew_utf8 -> spew_raw for 'output'. Test t/output.t (3 asserts red on main), patch -p1 round trip verified by hand. Snapshot /tmp/claude-1000/-home-getty-dev-p5-app-codefork-c9c1dc2c-b3ff-4b36-85f2-3be117be70b2/scratchpad/snap/codefork.pm.k9 (k10 + this line).
+
+2026-10-21 20:32 Committed as a09398f
