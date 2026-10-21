@@ -1,0 +1,25 @@
+---
+claimed_at: 2026-10-21T20:32:16Z
+claimed_by: app-codefork-worker
+class: standard
+completed: 2026-10-21T20:32:16Z
+created: 2026-10-21T20:15:02Z
+id: 10
+priority: high
+started: 2026-10-21T20:17:18Z
+status: done
+tags:
+- bug
+- apply
+title: A rename onto an existing file silently overwrites it (data loss)
+updated: 2026-10-21T20:32:16Z
+---
+
+On main: config A|B on a tree with A.txt ("one") and B.txt ("two") -> apply_changes leaves B.txt = "one", the content of the original B.txt is gone without a word. Same when two files map to the same new path.
+Work: collect_changes (the planning step, before anything touches disk) detects a new path that already exists and is not itself renamed away, or that two changes share, and dies naming the paths - nothing is written. The diff command reports it the same way. Tests for both cases, and that the tree is untouched after the die.
+
+2026-10-21 20:20 t/collision.t written first: failed 13 asserts on main (A|B overwrote B.txt; [ab]\.txt|c.txt merged two files; a rename chain ^B|C,^A|B also lost a file because apply ran in walk order). Fix in lib/App/codefork.pm: collect_changes calls _check_changes (croaks listing every new path that already exists and is not renamed away, every new path two changes share); _apply_order orders renames so a file moves only after the one in its way moved, and croaks on a rename cycle (swap). apply_changes re-checks and uses that order. Green.
+
+2026-10-21 20:24 Done. lib/App/codefork.pm: use Carp; collect_changes -> _check_changes (croak lists existing-not-vacated targets and shared targets) + _apply_order (renames ordered so the file in the way moves first; cycle croaks); apply_changes re-checks and applies in that order. Test t/collision.t (13 asserts red on main). prove -lr t/ green, dzil test green. Per-card file snapshot: /tmp/claude-1000/-home-getty-dev-p5-app-codefork-c9c1dc2c-b3ff-4b36-85f2-3be117be70b2/scratchpad/snap/codefork.pm.k10. Commit first (k8 depends on it).
+
+2026-10-21 20:32 Committed as 0842903
