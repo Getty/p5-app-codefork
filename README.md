@@ -61,6 +61,9 @@ hh%ah
 - `from|to` — regex replacement (`s/from/to/g`) in filenames and contents
 - `from%to` — whole-word replacement in contents only (matches only where no letter or digit comes directly before or after it; the start and end of a file count as a boundary)
 
+The config file itself is never rewritten or renamed, even when it lies inside
+the tree, as the default `fork.conf` does.
+
 ## Debug
 
 ```bash

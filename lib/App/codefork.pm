@@ -27,9 +27,16 @@ has mods => (
   is => 'lazy',
 );
 
+has _config_realpath => (
+  is       => 'lazy',
+  init_arg => undef,
+);
+
 =attr config
 
-Path to the config file containing forking instructions. Required.
+Path to the config file containing forking instructions. Required. When the
+config file lies inside L</dir>, it is left out of the walk: it is neither
+rewritten nor renamed.
 
 =attr dir
 
@@ -58,6 +65,8 @@ sub _build_mods {
     }
   } @lines ];
 }
+
+sub _build__config_realpath { shift->config->realpath->stringify }
 
 sub collect_changes {
   my ($self) = @_;
@@ -130,6 +139,7 @@ sub _collect_dir {
   for my $entry (sort $dir->children) {
     my $basename = $entry->basename;
     next if $basename eq '.git' || $basename eq '.svn';
+    next if $entry->is_file && $entry->realpath->stringify eq $self->_config_realpath;
 
     my $new_basename = $basename;
     for my $mod (@mods) {
@@ -405,7 +415,8 @@ Example config:
     homehive|aqhive
     hh%ah
 
-Empty lines and lines without a C<|> or C<%> separator are ignored.
+Empty lines and lines without a C<|> or C<%> separator are ignored. The config
+file itself is never rewritten or renamed, even when it lies inside the tree.
 
 =head1 ENVIRONMENT
 

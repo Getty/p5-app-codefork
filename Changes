@@ -20,6 +20,8 @@ Revision history for App-codefork
     whose name matches a rule is renamed and shown in the diff.
   - The word rule (from%to) also replaces a word at the start or end of a
     file and the second of two words separated by a single character.
+  - The config file is never rewritten or renamed, even when it lies inside
+    the tree, as the default fork.conf does.
 
 1.000     2026-03-06 17:14:40Z
     - BREAKING: New command-line interface, old --config/--dir/--debug flags removed

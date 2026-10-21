@@ -43,7 +43,8 @@ of what would change, so you can review before committing to the changes.
 Use the C<apply> command to actually write changes to disk, or C<output> to
 save the diff to a file for use with C<patch(1)>.
 
-The default config file is C<fork.conf> in the current directory.
+The default config file is C<fork.conf> in the current directory. The config
+file itself is never rewritten or renamed, even when it lies inside the tree.
 
 =head1 COMMANDS
 
