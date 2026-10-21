@@ -24,6 +24,8 @@ Revision history for App-codefork
     the tree, as the default fork.conf does.
   - A rewritten file keeps its file mode: executable scripts stay executable
     and private files stay private.
+  - codefork refuses, before writing anything, a rename that needs a
+    directory where a file is, or where another file is renamed to.
 
 1.000     2026-03-06 17:14:40Z
     - BREAKING: New command-line interface, old --config/--dir/--debug flags removed

@@ -88,9 +88,11 @@ C<new_path>, C<old_content>, C<new_content>. Only files are changes, with one
 exception: an empty directory whose path changes is a change with empty content
 on both sides, so it is renamed like a file and shows in the diff as a rename.
 
-Croaks, before anything is written, when the plan would lose a file: a new path
-that already exists and is not itself renamed away, a new path that two changes
-share, or renames that form a cycle.
+Croaks, before anything is written, when the plan would lose a file or could
+not be applied: a new path that already exists and is not itself renamed away,
+a new path that two changes share, a new path below an existing file that is
+not renamed away or below another change's new path, or renames that form a
+cycle.
 
 =cut
 
@@ -109,6 +111,15 @@ sub _check_changes {
     } elsif ( !$vacated{$new_path} && $self->dir->child($new_path)->exists ) {
       push @problems, $new_path.' (from '.$from[0].') already exists';
     }
+    for my $parent ( $self->_parents($new_path) ) {
+      my $on_disk = $self->dir->child($parent);
+      my $blocker = $target{$parent} ? 'the new path of '.$target{$parent}[0]
+        : !$vacated{$parent} && -e $on_disk && !-d $on_disk ? 'an existing file'
+        : undef;
+      next unless $blocker;
+      push @problems, $new_path.' (from '.$from[0].') needs a directory '.$parent.', which is '.$blocker;
+      last;
+    }
   }
   croak __PACKAGE__.' refuses the plan, nothing was written:'."\n"
     .join( "\n", map { '  '.$_ } @problems ) if @problems;
@@ -123,13 +134,25 @@ sub _apply_order {
     my %occupied = map { $_->{old_path} => 1 }
       grep { $_->{old_path} ne $_->{new_path} } @pending;
     my ( @ready, @blocked );
-    push @{ $occupied{ $_->{new_path} } ? \@blocked : \@ready }, $_ for @pending;
+    for my $change (@pending) {
+      my $waits = grep { $occupied{$_} } $change->{new_path}, $self->_parents( $change->{new_path} );
+      push @{ $waits ? \@blocked : \@ready }, $change;
+    }
     croak __PACKAGE__.' refuses a cycle of renames, nothing was written: '
       .join( ', ', map { $_->{old_path}.' -> '.$_->{new_path} } @blocked ) unless @ready;
     push @order, @ready;
     @pending = @blocked;
   }
   return \@order;
+}
+
+sub _parents {
+  my ( $self, $rel ) = @_;
+  my @parents;
+  for ( my $parent = path($rel)->parent; $parent->stringify ne '.'; $parent = $parent->parent ) {
+    push @parents, $parent->stringify;
+  }
+  return @parents;
 }
 
 sub _collect_dir {
@@ -270,11 +293,7 @@ sub _remove_emptied_dirs {
   my ( $self, $changes ) = @_;
   my %dirs;
   for my $change ( grep { $_->{old_path} ne $_->{new_path} } @$changes ) {
-    my $parent = path( $change->{old_path} )->parent;
-    while ( $parent->stringify ne '.' ) {
-      $dirs{ $parent->stringify } = 1;
-      $parent = $parent->parent;
-    }
+    $dirs{$_} = 1 for $self->_parents( $change->{old_path} );
   }
   for my $rel ( sort { ( $b =~ tr{/}{} ) <=> ( $a =~ tr{/}{} ) || $a cmp $b } keys %dirs ) {
     my $dir = $self->dir->child($rel);
@@ -291,8 +310,8 @@ sub _remove_emptied_dirs {
 
 Applies the collected changes to disk. Returns the number of changes applied.
 The plan is checked again before the first write and refused the same way as
-in L</collect_changes>; a file is renamed only after the file in its way has
-been renamed away. A rewritten file keeps the mode of the old file. A directory
+in L</collect_changes>; a file is renamed only after the file or directory in
+its way has been renamed away. A rewritten file keeps the mode of the old file. A directory
 the renames left empty is removed afterwards, deepest first; a directory that
 still holds something stays.
 
