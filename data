@@ -1,0 +1,30 @@
+---
+claimed_at: 2026-10-21T20:50:54Z
+claimed_by: app-codefork-worker
+class: standard
+completed: 2026-10-21T20:50:54Z
+created: 2026-10-21T20:45:51Z
+id: 15
+priority: medium
+started: 2026-10-21T20:45:56Z
+status: done
+tags:
+- dist
+title: 'Old-repo leftovers: test file names, FindBin lib in bin/codefork, .dockerignore'
+updated: 2026-10-21T20:50:54Z
+---
+
+- t/: rename to the house scheme of the siblings (../p5-data-coloured/t): load.t -> 00-load.t, basic.t -> 01-basic.t, then the rest numbered 02.. in a sensible order (config, word, run, output, dirs, collision, parents, config-in-tree, mode). git mv, no content change.
+- bin/codefork: drop "use FindBin; use lib $FindBin::Dir . "/../lib";" - an installed script then prepends e.g. /usr/local/bin/../lib to @INC and can load a foreign/stale App::codefork; the siblings (bin/ddc) do not do this. Running from a checkout is perl -Ilib bin/codefork / prove -l. Check that nothing (t/run.t, Dockerfile: it runs perl -I/app/lib, fine) relies on it.
+- .dockerignore: add .claude, .github, .karr, .worktreeinclude, CLAUDE.md so the build context stays small (the image only COPYs lib/ and bin/).
+Done when prove -lr t/ and dzil test --release are green and the Docker build context excludes these.
+
+2026-10-21 20:47 Done. git mv t/*.t to 00-load, 01-basic, 02-config, 03-word, 04-run, 05-output, 06-dirs, 07-collision, 08-parents, 09-config-in-tree, 10-mode (staged renames, no content change). bin/codefork: dropped 'use FindBin; use lib $FindBin::Dir."/../lib";' - nothing relied on it (tests call App::codefork->run directly, Dockerfile uses -I/app/lib); from a checkout it is now perl -Ilib bin/codefork (verified; without -Ilib it fails with Can't locate App/codefork.pm). .dockerignore: + .claude .github .karr .worktreeinclude CLAUDE.md; computed context is bin/ lib/ LICENSE. docker build NOT run: the sandbox refuses container creation (crun cgroup permission denied), not bypassed. prove -lr t/ 105 green, dzil test --release 109 green, dzil clean done.
+
+Added by the orchestrator: when run() hits a refused plan (croak from _check_changes), the CLI user sees "... already exists at /path/bin/codefork line 10." - the croak location leaks into the CLI output. The CLI should print the refusal without the "at FILE line N." suffix and exit non-zero (the library API keeps croaking). Test in t/ via run() in a temp tree (message text and no "line N").
+
+2026-10-21 20:49 Addition done. lib/App/codefork.pm: run() runs the command in _run_command inside eval; on error it strips exactly the ' at <caller file> line <caller line>.' suffix a croak of this class carries and re-dies with the message + newline (exit 255, STDERR - same as the existing 'Config file not found'). Errors from elsewhere (Path::Tiny objects, other locations) pass through unchanged; collect_changes etc. still croak with file and line (pinned). run POD gets the sentence. t/04-run.t: refusal via run() for diff/apply/output (exact message, empty STDOUT, nothing written, no output file) + the real script via $^X -Ilib bin/codefork apply (exit non-zero, output = refusal only) - 4 asserts red before. .dockerignore: + .build, blib. README.md untouched by me (its diff is the orchestrator's). prove -lr t/ 116 green, dzil test --release 120 green, dzil clean.
+
+2026-10-21 20:49 Ready again: see the 'Addition done' note. Split: commit 1 = staged t/ renames + bin/codefork + .dockerignore; commit 2 = lib/App/codefork.pm + t/04-run.t content change.
+
+2026-10-21 20:50 Committed as 5b028ac (tests, FindBin, dockerignore) and 4c62173 (CLI refusal output)
