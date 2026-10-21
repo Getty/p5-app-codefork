@@ -1,0 +1,43 @@
+---
+claimed_at: 2026-10-21T20:31:38Z
+claimed_by: app-codefork-worker
+class: standard
+completed: 2026-10-21T20:31:38Z
+created: 2026-10-21T02:16:01Z
+id: 6
+priority: medium
+started: 2026-10-21T20:00:49Z
+status: done
+tags:
+- ci
+- github-actions
+title: 'No CI: the Travis file is dead - replace it with the shared GitHub Actions
+  workflow'
+updated: 2026-10-21T20:31:38Z
+---
+
+The only CI configuration is the file .travis.yml, which no longer runs; there is no .github/workflows directory.
+
+The Author bundle ships a shared composite action for exactly this case, so a Getty distribution needs no test plumbing of its own:
+
+    - uses: Getty/p5-dist-zilla-pluginbundle-author-getty/.github/actions/dzil-test@v1
+
+Work:
+- add .github/workflows/ci.yml as a pure-Perl distribution workflow: trigger on push to all branches, on tags, and on pull_request; a matrix of perl versions in the perl image containers; actions/checkout@v4; then the shared dzil-test action
+- delete .travis.yml
+- the action installs the dzil plugins through dzil authordeps and the requirements through dzil listdeps; the cpanfile has to list MooX::Options and IO::All for that to work
+- the workflow file must not end up in the built distribution; check the tarball after dzil build
+
+Use @main for the shared action (as every sibling and the getty-perl-distribution skill do), not @v1. Tags are ignored in the trigger, as in ../p5-data-coloured/.github/workflows/ci.yml.
+
+2026-10-21 20:02 Started: copying ../p5-data-coloured/.github/workflows/ci.yml verbatim (tags ignored, @main), git rm .travis.yml.
+
+2026-10-21 20:05 Found: the bundle gathers dotfiles (gather_include_dotfiles=1, PruneCruft removed), so .github/workflows/ci.yml shipped in the first build. Added 'match = ^\.github/' to [PruneFiles] in dist.ini (shared with k7). Also found: ../p5-data-coloured prunes only .claude/ and .worktreeinclude, so by the same bundle config its tarball carries .github/ — drift for that board. .gitignore still ships in this tarball (not in scope of any card).
+
+2026-10-21 20:05 Done: .github/workflows/ci.yml copied verbatim from ../p5-data-coloured (push all branches, tags-ignore, pull_request, perl 5.36/5.38/5.40 bookworm containers, checkout@v4, dzil-test@main); .travis.yml git rm'd; .github/ pruned via dist.ini [PruneFiles]. cpanfile lists IO::All and MooX::Options. Verified: dzil build tarball has no .github/ or .travis.yml; dzil test and dzil test --release PASS. Files: .github/workflows/ci.yml (A), .travis.yml (D), dist.ini (the ^\.github/ line + comment sentence), Changes (CI entry + workflow in the tarball entry).
+
+REDO ON MAIN: .travis.yml is already gone on main (a52f481). Remaining: .github/workflows/ci.yml from ../p5-data-coloured, prune ^\.github/ in dist.ini, drop the stale "filename = .travis.yml" PruneFiles line.
+
+2026-10-21 20:18 Done on main: .github/workflows/ci.yml copied verbatim from ../p5-data-coloured (push all branches, tags-ignore, pull_request, perl 5.36/5.38/5.40 bookworm containers, checkout@v4, safe.directory, dzil-test@main), staged with git add. dist.ini: stale 'filename = .travis.yml' dropped, 'match = ^\.github/' added to [PruneFiles] (bundle gathers dotfiles). cpanfile needs no extra modules on main (Moo, Path::Tiny, Text::Diff). Verified: dzil build tarball has no .github/; dzil test --release PASS. Files: .github/workflows/ci.yml (A, staged), dist.ini (shared with k7).
+
+2026-10-21 20:31 Committed as 1b05148
