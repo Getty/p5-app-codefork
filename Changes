@@ -4,6 +4,8 @@ Revision history for App-codefork
   - Add CLAUDE.md with project guidance for AI assistants.
   - Ship a LICENSE file in the distribution.
   - bin/codefork carries its own $VERSION.
+  - Run the tests on GitHub Actions (Perl 5.36, 5.38, 5.40) instead of
+    Travis; .github/ stays out of the tarball.
 
 1.000     2026-03-06 17:14:40Z
     - BREAKING: New command-line interface, old --config/--dir/--debug flags removed
