@@ -116,17 +116,6 @@ Set to a true value to enable verbose debug output to STDERR.
 
 =back
 
-=head1 SUPPORT
-
-Repository
-
-  L<https://github.com/Getty/p5-app-codefork>
-  Pull request and additional contributors are welcome
-
-Issue Tracker
-
-  L<https://github.com/Getty/p5-app-codefork/issues>
-
 =cut
 
 1;
