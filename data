@@ -1,0 +1,28 @@
+---
+class: standard
+completed: 2026-10-21T20:14:25Z
+created: 2026-10-21T02:15:08Z
+id: 2
+priority: high
+started: 2026-10-21T20:14:25Z
+status: done
+tags:
+- bug
+- walk
+title: The walk never changes directory - the tool works in the wrong directory
+updated: 2026-10-21T20:14:25Z
+---
+
+In work_on_dir the working directory is set with local CWD = dir. That assigns to the global variable CWD; only chdir moves the process. File::chdir is imported - and listed in the cpanfile - but never called.
+
+Two consequences:
+- the walk lists the current directory, the one the tool was started in, whatever the work directory says
+- the recursion into a subdirectory lists that same directory again instead of descending into it
+
+Work:
+- chdir into the work directory for the duration of the walk and restore it afterwards; File::chdir is in the cpanfile for exactly that
+- the recursion must list the directory it was called with, not the process directory
+- the config path is read before the walk, so a relative config path stays relative to the directory the tool was started in - keep it that way and say so in the POD
+- add a test that builds a tree with a subdirectory and asserts that the file inside the subdirectory is rewritten; today the recursion never reaches it
+
+Obsolete: written against the 2014 code on origin/master. On main the walk uses Path::Tiny children of $self->dir, there is no File::chdir any more. Nothing to do.
