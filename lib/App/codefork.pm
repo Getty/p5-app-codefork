@@ -298,7 +298,7 @@ sub run {
     print "Applied $count change(s).\n";
   } elsif ($command eq 'output') {
     my $diff = $app->generate_diff($changes);
-    path($output_file)->spew_utf8($diff);
+    path($output_file)->spew_raw($diff);
     print "Wrote diff to $output_file\n";
   }
 }

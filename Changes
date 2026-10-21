@@ -14,6 +14,8 @@ Revision history for App-codefork
     path, or two files swapping names. The diff refuses it the same way.
     When one rename frees a path for another, they are applied in a safe
     order.
+  - codefork output writes the diff as raw bytes. Non-ASCII content was
+    UTF-8 encoded twice, so the diff did not apply with patch -p1.
 
 1.000     2026-03-06 17:14:40Z
     - BREAKING: New command-line interface, old --config/--dir/--debug flags removed
