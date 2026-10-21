@@ -56,7 +56,8 @@ only skipped because it has no separator.
    are removed afterwards, deepest first. Returns the number of changes.
 6. **CLI** — `run(@ARGV)`, positional: `codefork [conf]` (diff, default `fork.conf`),
    `codefork apply [conf]`, `codefork output [conf] file`. It works on the cwd. Debug
-   is `CODEFORK_DEBUG=1` to STDERR. The pre-1.000 `--config`/`--dir`/`--debug`
+   is `CODEFORK_DEBUG=1` to STDERR. `run` prints a refused plan without the croak's file and
+   line and dies non-zero; the library methods keep croaking with the location. The pre-1.000 `--config`/`--dir`/`--debug`
    flags were removed on purpose — no new flags.
 
 The plan/apply split is the product: every check that can refuse a run belongs in the
@@ -77,7 +78,8 @@ Open defects are cards on the karr board, not paragraphs here.
 
 ## Tests
 
-`t/basic.t` builds a temp tree with `Path::Tiny->tempdir`, keeps the config in a
+Test files are numbered `NN-name.t`, as in the sibling distributions.
+`t/01-basic.t` builds a temp tree with `Path::Tiny->tempdir`, keeps the config in a
 second temp dir, and asserts plan, diff and apply. Every new test does the same —
 the tool rewrites files in place.
 
@@ -89,5 +91,5 @@ the tool rewrites files in place.
 - Moo only; requirements `Moo`, `Path::Tiny`, `Text::Diff`.
 - Every file under `lib/` and `bin/` carries `our $VERSION`, the next unreleased
   version — `1.001` after the `1.000` release.
-- `bin/codefork` opens with `use lib $FindBin::Dir . "/../lib";` — a convenience for
-  running from a checkout.
+- `bin/codefork` is a plain wrapper with no `FindBin`/`use lib`; from a checkout it
+  runs as `perl -Ilib bin/codefork`, and the Docker image passes `-I/app/lib`.
