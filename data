@@ -1,0 +1,36 @@
+---
+claimed_at: 2026-10-21T20:31:27Z
+claimed_by: app-codefork-worker
+class: standard
+completed: 2026-10-21T20:31:27Z
+created: 2026-10-21T02:15:57Z
+id: 5
+priority: medium
+started: 2026-10-21T20:00:44Z
+status: done
+tags:
+- release
+- dist
+title: 'dzil build aborts: no LICENSE and no Changes file'
+updated: 2026-10-21T20:31:27Z
+---
+
+Two files are missing that the build needs:
+- LICENSE: dzil build aborts with the message from the bundle that no LICENSE is in the distribution. Fix: run dzil genlicense and then stage LICENSE - the stage is not optional, the bundle gathers only tracked files, so an untracked LICENSE fails with the identical message
+- Changes: the file does not exist at all. The release test checks that the changelog has content, so it fails. Create it in CPAN format with the unreleased section at the top. The file starts with the current work, it is not a historical release list, and the unreleased section needs at least one entry line
+
+Also open: neither lib/App/codefork.pm nor bin/codefork carries a version declaration, while the house rule wants one in every file under lib/ and in every script under bin/.
+
+Done when dzil build runs clean.
+
+2026-10-21 20:02 Started: dzil genlicense + stage, Changes with {{$NEXT}}, then checking what version dzil derives from the 1.000 tag before deciding on our $VERSION.
+
+2026-10-21 20:05 Version decision: without a declaration RewriteVersion::Transitional falls back to Git::NextVersion and derives 1.001 from tag 1.000, but inserts $VERSION only into lib/App/codefork.pm — bin/codefork shipped versionless. Added our $VERSION = '1.001' to both (next after the 1.000 tag, same as data-coloured 0.003->0.004 and www-hetzner 0.102->0.103); build now reads 1.001 from source, BumpVersionAfterRelease takes it to 1.002 after release. The rules file's 'version derived from tags only' no longer matches. Changes: no historical 0.001/1.000 lines, per this card and the sibling — getty-git-commit-style would list released versions from tags; noting the divergence.
+
+2026-10-21 20:05 Done: LICENSE via dzil genlicense (identical to data-coloured's apart from the name), staged; Changes created (header, {{$NEXT}}, six entries, wrapped at 78); our $VERSION = '1.001' in lib/App/codefork.pm and bin/codefork. Verified: dzil build clean (App-codefork-1.001), both files carry 1.001 in the build; dzil test PASS, dzil test --release PASS incl. release-changes_has_content.t; prove -lr t/ PASS. Files: LICENSE (A), Changes (A; entries for licence + version), lib/App/codefork.pm and bin/codefork (the $VERSION line only).
+
+REDO ON MAIN: the first round was done on the 2014 base (origin/master) and is void. On main (release 1.000): Changes exists already ({{$NEXT}} + 1.000 section), lib/App/codefork.pm has our $VERSION = 1.001, bin/codefork has none. Remaining: dzil genlicense + git add LICENSE, our $VERSION = 1.001 in bin/codefork.
+
+2026-10-21 20:18 Done on main: LICENSE via dzil genlicense (Perl_5, holder 'Torsten Raudssus <torsten@raudssus.de> L<https://raudssus.de/>', 2026 — identical to data-coloured's), staged with git add; our $VERSION = '1.001'; in bin/codefork directly under # ABSTRACT (same spot as lib/App/codefork.pm). Changes untouched (release-manager). Verified: dzil build clean -> App-codefork-1.001, both files carry 1.001 in the build; prove -lr t/ PASS; dzil test --release PASS incl. release-changes_has_content.t. Files: LICENSE (A, staged), bin/codefork (version line).
+
+2026-10-21 20:31 Committed as b904d7b
