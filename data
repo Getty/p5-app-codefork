@@ -1,0 +1,28 @@
+---
+claimed_at: 2026-10-21T20:31:08Z
+claimed_by: app-codefork-worker
+class: standard
+completed: 2026-10-21T20:31:08Z
+created: 2026-10-21T02:15:49Z
+id: 3
+priority: high
+started: 2026-10-21T20:17:01Z
+status: done
+tags:
+- test
+- coverage
+title: run() and the config parsing are untested
+updated: 2026-10-21T20:31:08Z
+---
+
+Rescoped for main (release 1.000 rewrite). t/basic.t covers collect_changes, generate_diff and apply_changes on a temp tree. Not covered:
+- run(): the positional CLI - no argument (diff with fork.conf), a config argument, apply [conf], output [conf] file, output without a file (dies), a missing config (dies). run() reads fork.conf relative to the cwd and works on the cwd, so the test has to chdir into its own temp dir (and back) - never run it in the repository.
+- config parsing: empty lines and lines without | or % are ignored; a|b|c splits into from a and to b|c (limit 2); a line with both separators is a replace rule.
+- the name rule takes every replace rule in order, each sees the output of the previous one (the codefork-usage skill documents this ordering).
+Done when each of these has an assertion in t/ and prove -lr t/ is green.
+
+2026-10-21 20:24 Also found (candidates for new cards, this board): (1) the default fork.conf lives in the tree it rewrites - 'Old|New' + 'codefork apply' turns fork.conf into 'New|New' (and a config named Old.conf would be renamed); (2) every rewritten file loses its mode - spew_raw writes a fresh file, so executable bits (bin/ scripts) drop to 0664, reproduced with chmod 755 Old.sh; (3) a file path whose new parent exists as a *file* (Old/a.txt -> New/a.txt with a file New) passes the k10 check and dies mid-apply in mkpath after earlier changes were written; (4) dzil test only gathers git-tracked tests, so the six new t/*.t join the release-path run only once committed.
+
+2026-10-21 20:24 Done, test-only, no lib change. t/config.t (mods parsing: empty/separator-less lines ignored, split at first separator a|b|c, | wins over %, CRLF; name and content take every replace rule top to bottom, each on the previous output) and t/run.t (no arg = diff with fork.conf, config arg, No changes., apply [conf], works on the cwd only, output [conf] file, output without file dies, missing config dies; every call chdirs into a temp tree and back). Green on the code; mutation-checked: 6 mutations of split limit, separator precedence, rule order, apply/output arg parsing, No changes. each turn a test red.
+
+2026-10-21 20:31 Committed as 9687593
