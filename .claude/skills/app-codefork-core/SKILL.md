@@ -50,10 +50,14 @@ only skipped because it has no separator.
    `rename from/to` headers for renamed files.
 5. **Apply** — `apply_changes` checks the plan again and writes it in an order that
    moves the file or directory in a new path's way, or in its parent chain, first.
-   New content goes through a 0600 temp file in the target directory that takes the
-   old file's mode and is renamed into place, then the old file is removed; a pure
-   rename is a move and keeps its mode. Directories the renames left empty
-   are removed afterwards, deepest first. Returns the number of changes.
+   New content goes into the existing inode (open read-write, truncate, write) after
+   the old content is copied to a 0600 `.codefork-*` backup next to the file; the
+   backup is removed on success, on failure the content is restored from it and apply
+   croaks naming it. A rename is always a move, so owner, group, mode, hard links,
+   ACLs and xattrs stay. A directory created for a rename takes the mode, and as far
+   as permitted the owner and group, of the directory it replaces. Directories the
+   renames left empty are removed afterwards, deepest first. Returns the number of
+   changes. The plan refuses a file whose content changes but which is not writable.
 6. **CLI** — `run(@ARGV)`, positional: `codefork [conf]` (diff, default `fork.conf`),
    `codefork apply [conf]`, `codefork output [conf] file`. It works on the cwd. Debug
    is `CODEFORK_DEBUG=1` to STDERR. `run` prints a refused plan without the croak's file and
