@@ -239,7 +239,7 @@ sub apply_changes {
 
     if ($modified) {
       $self->log("modify: $change->{new_path}");
-      $new->spew_raw($change->{new_content});
+      $self->_write_file( $old, $new, $change->{new_content} );
       if ($renamed) {
         $self->log("rename: $change->{old_path} -> $change->{new_path}");
         $old->remove;
@@ -251,6 +251,19 @@ sub apply_changes {
   }
   $self->_remove_emptied_dirs($changes);
   return scalar @$changes;
+}
+
+sub _write_file {
+  my ( $self, $old, $new, $content ) = @_;
+  # starts as 0600, takes the old mode, then replaces the new path in one rename
+  my $temp = Path::Tiny->tempfile(
+    TEMPLATE => '.codefork-XXXXXXXX',
+    DIR      => $new->parent->stringify,
+  );
+  $temp->append_raw($content);
+  $temp->chmod( $old->stat->mode & 07777 );
+  $temp->move($new);
+  return;
 }
 
 sub _remove_emptied_dirs {
@@ -279,8 +292,9 @@ sub _remove_emptied_dirs {
 Applies the collected changes to disk. Returns the number of changes applied.
 The plan is checked again before the first write and refused the same way as
 in L</collect_changes>; a file is renamed only after the file in its way has
-been renamed away. A directory the renames left empty is removed afterwards,
-deepest first; a directory that still holds something stays.
+been renamed away. A rewritten file keeps the mode of the old file. A directory
+the renames left empty is removed afterwards, deepest first; a directory that
+still holds something stays.
 
 =cut
 

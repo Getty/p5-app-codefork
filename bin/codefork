@@ -58,7 +58,8 @@ action and is completely safe — nothing is modified on disk.
 =item C<codefork apply> [I<config>]
 
 Apply all changes to files in the current directory tree. Filenames are
-renamed and file contents are modified in place.
+renamed and file contents are modified in place; a rewritten file keeps its
+file mode.
 
 Before anything is written, codefork refuses a run in which a rename would
 overwrite an existing file, two files would get the same name, or renames
