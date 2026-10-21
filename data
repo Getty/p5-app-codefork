@@ -1,0 +1,25 @@
+---
+claimed_at: 2026-10-21T20:31:57Z
+claimed_by: app-codefork-worker
+class: standard
+completed: 2026-10-21T20:31:57Z
+created: 2026-10-21T20:14:53Z
+id: 8
+priority: high
+started: 2026-10-21T20:17:10Z
+status: done
+tags:
+- bug
+- apply
+title: apply leaves the old directory behind when a directory is renamed
+updated: 2026-10-21T20:31:57Z
+---
+
+On main: a config Old|New on a tree with Old/a.txt -> after apply_changes the tree holds New/ and an empty Old/. The files move, the directory does not: _collect_dir only records files, apply_changes creates the new parent and removes the old file, never the old directory. An empty directory whose name matches a rule is not renamed at all (no change is recorded for it).
+Work: after apply, a renamed directory is gone from its old place (remove the old directories that the apply emptied, deepest first - never a directory that still holds something), and decide with a test what an empty matching directory does (rename it, recorded as a change and shown in the diff as a rename). Tests on a temp tree.
+
+2026-10-21 20:21 t/dirs.t written first: 6 asserts failed on main (empty Old/ left behind; empty matching dir not recorded). Decision pinned by test: an empty directory whose path changes (own name or a renamed parent) is a change with empty content on both sides -> diff shows 'rename from/to', apply moves it; onto an existing path it is refused by the k10 check. Fix in lib/App/codefork.pm: _collect_dir records such dirs; apply_changes ends with _remove_emptied_dirs (ancestors of every renamed old path, deepest first, rmdir only when empty). A dir that still holds something stays (pinned: Old/.git is skipped by the walk, so Old/ keeps .git and is not removed). Green.
+
+2026-10-21 20:24 Done. lib/App/codefork.pm: _collect_dir records an empty dir whose path changes (empty content both sides, diff shows rename); apply_changes ends with _remove_emptied_dirs (rmdir only empty ancestors of renamed old paths, deepest first). Test t/dirs.t (6 asserts red on main; last block relies on k10's refusal). Snapshot /tmp/claude-1000/-home-getty-dev-p5-app-codefork-c9c1dc2c-b3ff-4b36-85f2-3be117be70b2/scratchpad/snap/codefork.pm.k8.
+
+2026-10-21 20:31 Committed as 376ac11
