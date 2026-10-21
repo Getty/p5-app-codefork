@@ -1,0 +1,19 @@
+---
+claimed_at: 2026-10-21T21:06:00Z
+claimed_by: app-codefork-worker
+class: standard
+completed: 2026-10-21T21:06:00Z
+created: 2026-10-21T21:05:01Z
+id: 16
+priority: medium
+started: 2026-10-21T21:05:10Z
+status: done
+tags:
+- ci
+title: Move CI to SimpiCI with the [@Author::GETTY] provider
+updated: 2026-10-21T21:06:00Z
+---
+
+Replace the dzil-test GitHub Actions workflow with the thin SimpiCI workflow of ../p5-beepack (reusable Getty/simpici workflow + ghcr.io/getty/simpici-dzil-provider:main): Perl 5.22-5.44 instead of 5.36-5.40, no Node 20 warning (simpici uses checkout@v6). Orchestrator did the file change (non-behavioural CI config).
+
+2026-10-21 21:05 Committed as 4a7f0ad
