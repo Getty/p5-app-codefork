@@ -75,7 +75,9 @@ sub collect_changes {
 
 Recursively scans the work directory and computes all modifications without
 applying them. Returns an arrayref of change hashrefs with keys C<old_path>,
-C<new_path>, C<old_content>, C<new_content>.
+C<new_path>, C<old_content>, C<new_content>. Only files are changes, with one
+exception: an empty directory whose path changes is a change with empty content
+on both sides, so it is renamed like a file and shows in the diff as a rename.
 
 Croaks, before anything is written, when the plan would lose a file: a new path
 that already exists and is not itself renamed away, a new path that two changes
@@ -142,6 +144,12 @@ sub _collect_dir {
       : $new_basename;
 
     if ($entry->is_dir) {
+      push @$changes, {
+        old_path    => $old_rel,
+        new_path    => $new_rel,
+        old_content => '',
+        new_content => '',
+      } if $new_rel ne $old_rel && !$entry->children;
       $self->_collect_dir($entry, $new_rel, $changes);
     } else {
       my $content = $entry->slurp_raw;
@@ -231,7 +239,27 @@ sub apply_changes {
       $old->move($new);
     }
   }
+  $self->_remove_emptied_dirs($changes);
   return scalar @$changes;
+}
+
+sub _remove_emptied_dirs {
+  my ( $self, $changes ) = @_;
+  my %dirs;
+  for my $change ( grep { $_->{old_path} ne $_->{new_path} } @$changes ) {
+    my $parent = path( $change->{old_path} )->parent;
+    while ( $parent->stringify ne '.' ) {
+      $dirs{ $parent->stringify } = 1;
+      $parent = $parent->parent;
+    }
+  }
+  for my $rel ( sort { ( $b =~ tr{/}{} ) <=> ( $a =~ tr{/}{} ) || $a cmp $b } keys %dirs ) {
+    my $dir = $self->dir->child($rel);
+    next unless $dir->is_dir && !$dir->children;
+    $self->log('remove: '.$rel);
+    rmdir $dir or croak __PACKAGE__.'->apply_changes can not remove '.$rel.': '.$!;
+  }
+  return;
 }
 
 =method apply_changes
@@ -241,7 +269,8 @@ sub apply_changes {
 Applies the collected changes to disk. Returns the number of changes applied.
 The plan is checked again before the first write and refused the same way as
 in L</collect_changes>; a file is renamed only after the file in its way has
-been renamed away.
+been renamed away. A directory the renames left empty is removed afterwards,
+deepest first; a directory that still holds something stays.
 
 =cut
 
