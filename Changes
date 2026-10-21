@@ -14,8 +14,8 @@ Revision history for App-codefork
     path, or two files swapping names. The diff refuses it the same way.
     When one rename frees a path for another, they are applied in a safe
     order.
-  - codefork output writes the diff as raw bytes. Non-ASCII content was
-    UTF-8 encoded twice, so the diff did not apply with patch -p1.
+  - codefork output writes the diff as raw bytes, so a diff of non-ASCII
+    content applies with patch -p1.
   - apply removes the directories a rename left empty. An empty directory
     whose name matches a rule is renamed and shown in the diff.
   - The word rule (from%to) also replaces a word at the start or end of a
