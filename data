@@ -1,0 +1,24 @@
+---
+claimed_at: 2026-10-21T20:39:49Z
+claimed_by: app-codefork-worker
+class: standard
+completed: 2026-10-21T20:39:49Z
+created: 2026-10-21T20:26:06Z
+id: 12
+priority: high
+started: 2026-10-21T20:32:42Z
+status: done
+tags:
+- bug
+- apply
+title: Rewritten files lose their file mode
+updated: 2026-10-21T20:39:49Z
+---
+
+Found while fixing k8 (reproduced by the worker): apply_changes writes with spew_raw, which creates a fresh file, so a chmod 755 script comes out 0664 (umask). Keep the mode of the old file on the new one, for a modified file and for a renamed+modified one. Test with an executable file in a temp tree.
+
+2026-10-21 20:35 t/mode.t written first: 3 asserts red on main (0755 -> 0664 in place and renamed+modified; a 0600 file came out 0664, i.e. world-readable). Fix in lib/App/codefork.pm: apply writes through _write_file - File::Temp file in the target dir (created 0600), content appended, chmod to the old file's mode & 07777, then one rename onto the new path. So there is no window in which a private file is readable, and the replace stays atomic. Pure renames keep their mode as before (pinned). Asserts no .codefork-* temp file is left. apply_changes POD gets one sentence. Green.
+
+2026-10-21 20:37 Done. lib: apply writes via _write_file (0600 temp in target dir, chmod old mode, rename) + one POD sentence; bin/codefork apply item: 'keeps its file mode'. Test t/mode.t (red at the k11 snapshot). Snapshots /tmp/claude-1000/-home-getty-dev-p5-app-codefork-c9c1dc2c-b3ff-4b36-85f2-3be117be70b2/scratchpad/snap/codefork.pm.k12, /tmp/claude-1000/-home-getty-dev-p5-app-codefork-c9c1dc2c-b3ff-4b36-85f2-3be117be70b2/scratchpad/snap/codefork.bin.k12 (README unchanged). Commit second.
+
+2026-10-21 20:39 Committed as a9ae092
