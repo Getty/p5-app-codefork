@@ -1,0 +1,28 @@
+---
+claimed_at: 2026-10-21T20:31:18Z
+claimed_by: app-codefork-worker
+class: standard
+completed: 2026-10-21T20:31:18Z
+created: 2026-10-21T02:15:53Z
+id: 4
+priority: medium
+started: 2026-10-21T20:17:05Z
+status: done
+tags:
+- bug
+- config
+title: The word rule misses a word at the start or end of the text and adjacent occurrences
+updated: 2026-10-21T20:31:18Z
+---
+
+Rescoped for main (release 1.000). The replace rule from|to is documented as a regex since 1.000 (POD CONFIG FILE FORMAT, README, CLAUDE.md) - that stays, it is the contract now, not a bug.
+The word rule is still broken: s/([^A-Za-z0-9]+)$from([^A-Za-z0-9]+)/$1$to$2/g needs a non-alphanumeric character on both sides and consumes them. Probe on main with hh%ah:
+  "hh = 1;\nmy hh,hh\nend hh"  ->  "hh = 1;\nmy ah,hh\nend hh"
+The word at the start of the text, the second of two adjacent words and the word at the end are all missed.
+Work: match the word with lookaround against the alphanumeric class (start and end of text count as a boundary, the separators are not consumed), keep the documented meaning (hh does not match inside ohhh), keep $from as regex source like the replace rule. A test with exactly the probe text above.
+
+2026-10-21 20:22 t/word.t written first with exactly the probe text ('hh = 1;\nmy hh,hh\nend hh' -> all four replaced); 5 asserts failed on main. Fix: s/(?<![A-Za-z0-9])$from(?![A-Za-z0-9])/$to/g - lookaround, separators not consumed, start/end of text are boundaries, $from stays regex source (pinned: h+%ah), still never inside ohhh, never renames. POD CONFIG FILE FORMAT in lib/App/codefork.pm and README.md config bullet updated (also states 'contents only'). Green.
+
+2026-10-21 20:24 Done. lib/App/codefork.pm: word rule uses lookaround (?<![A-Za-z0-9])$from(?![A-Za-z0-9]); POD CONFIG FILE FORMAT + README.md config bullet updated. Test t/word.t with the probe text (5 asserts red on main). Snapshot /tmp/claude-1000/-home-getty-dev-p5-app-codefork-c9c1dc2c-b3ff-4b36-85f2-3be117be70b2/scratchpad/snap/codefork.pm.k4 = final file.
+
+2026-10-21 20:31 Committed as 638783c
