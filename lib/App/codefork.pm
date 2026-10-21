@@ -2,6 +2,7 @@ package App::codefork;
 # ABSTRACT: Worlds dumbest code forker
 our $VERSION = '1.001';
 use Moo;
+use Carp qw( croak );
 use Path::Tiny;
 use Text::Diff;
 
@@ -64,6 +65,7 @@ sub collect_changes {
   $self->log($_->[0].': '.$_->[1].' => '.$_->[2]) for @{$self->mods};
   my @changes;
   $self->_collect_dir($self->dir, '', \@changes);
+  $self->_check_changes(\@changes);
   return \@changes;
 }
 
@@ -75,7 +77,49 @@ Recursively scans the work directory and computes all modifications without
 applying them. Returns an arrayref of change hashrefs with keys C<old_path>,
 C<new_path>, C<old_content>, C<new_content>.
 
+Croaks, before anything is written, when the plan would lose a file: a new path
+that already exists and is not itself renamed away, a new path that two changes
+share, or renames that form a cycle.
+
 =cut
+
+sub _check_changes {
+  my ( $self, $changes ) = @_;
+  my ( %target, %vacated, @problems );
+  for my $change (@$changes) {
+    next if $change->{old_path} eq $change->{new_path};
+    push @{ $target{ $change->{new_path} } }, $change->{old_path};
+    $vacated{ $change->{old_path} } = 1;
+  }
+  for my $new_path ( sort keys %target ) {
+    my @from = @{ $target{$new_path} };
+    if ( @from > 1 ) {
+      push @problems, join( ' and ', @from ).' would all become '.$new_path;
+    } elsif ( !$vacated{$new_path} && $self->dir->child($new_path)->exists ) {
+      push @problems, $new_path.' (from '.$from[0].') already exists';
+    }
+  }
+  croak __PACKAGE__.' refuses the plan, nothing was written:'."\n"
+    .join( "\n", map { '  '.$_ } @problems ) if @problems;
+  return $self->_apply_order($changes);
+}
+
+sub _apply_order {
+  my ( $self, $changes ) = @_;
+  my @pending = @$changes;
+  my @order;
+  while (@pending) {
+    my %occupied = map { $_->{old_path} => 1 }
+      grep { $_->{old_path} ne $_->{new_path} } @pending;
+    my ( @ready, @blocked );
+    push @{ $occupied{ $_->{new_path} } ? \@blocked : \@ready }, $_ for @pending;
+    croak __PACKAGE__.' refuses a cycle of renames, nothing was written: '
+      .join( ', ', map { $_->{old_path}.' -> '.$_->{new_path} } @blocked ) unless @ready;
+    push @order, @ready;
+    @pending = @blocked;
+  }
+  return \@order;
+}
 
 sub _collect_dir {
   my ($self, $dir, $new_dir_prefix, $changes) = @_;
@@ -167,7 +211,7 @@ is not passed, calls L</collect_changes> automatically.
 sub apply_changes {
   my ($self, $changes) = @_;
   $changes //= $self->collect_changes;
-  for my $change (@$changes) {
+  for my $change ( @{ $self->_check_changes($changes) } ) {
     my $old = $self->dir->child($change->{old_path});
     my $new = $self->dir->child($change->{new_path});
     my $renamed = $change->{old_path} ne $change->{new_path};
@@ -195,6 +239,9 @@ sub apply_changes {
     my $count = $app->apply_changes($changes);
 
 Applies the collected changes to disk. Returns the number of changes applied.
+The plan is checked again before the first write and refused the same way as
+in L</collect_changes>; a file is renamed only after the file in its way has
+been renamed away.
 
 =cut
 
