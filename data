@@ -1,0 +1,24 @@
+---
+claimed_at: 2026-10-21T20:39:40Z
+claimed_by: app-codefork-worker
+class: standard
+completed: 2026-10-21T20:39:40Z
+created: 2026-10-21T20:26:01Z
+id: 11
+priority: high
+started: 2026-10-21T20:32:37Z
+status: done
+tags:
+- bug
+- apply
+title: The config rewrites itself when it lies inside the tree
+updated: 2026-10-21T20:39:40Z
+---
+
+Found while fixing k3/k8. run() reads fork.conf from the cwd and works on the cwd, so the default config is part of the tree it rewrites: Old|New plus codefork apply turns fork.conf into New|New, and a config named Old.conf is renamed. collect_changes must skip the config file itself (compare absolute real paths), in the diff and in the apply. Test with a config inside the temp tree.
+
+2026-10-21 20:34 t/config-in-tree.t written first: 5 asserts red on main (fork.conf rewritten to New|New, Old.conf renamed). Fix in lib/App/codefork.pm: private lazy attr _config_realpath (init_arg undef, builder shift->config->realpath); _collect_dir skips a file whose realpath equals it - covers the default fork.conf, a named config, a symlinked tree and a dotted config path (pinned). POD (attr config + CONFIG FILE FORMAT), README config section, bin/codefork DESCRIPTION: one sentence each. Green.
+
+2026-10-21 20:37 Done. lib: _config_realpath attr + skip in _collect_dir; POD attr config + CONFIG FILE FORMAT; README config section; bin/codefork DESCRIPTION sentence. Test t/config-in-tree.t (red at HEAD 99395e6). Snapshots /tmp/claude-1000/-home-getty-dev-p5-app-codefork-c9c1dc2c-b3ff-4b36-85f2-3be117be70b2/scratchpad/snap/{codefork.pm,README.md,codefork.bin}.k11. prove -lr t/ + dzil test green. Commit first.
+
+2026-10-21 20:39 Committed as ca1fe03
