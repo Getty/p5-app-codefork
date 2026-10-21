@@ -26,6 +26,9 @@ Revision history for App-codefork
     and private files stay private.
   - codefork refuses, before writing anything, a rename that needs a
     directory where a file is, or where another file is renamed to.
+  - bin/codefork no longer adds <bindir>/../lib to the module search path,
+    so an installed codefork cannot load a different or stale App::codefork
+    from there. From a checkout, run it as perl -Ilib bin/codefork.
 
 1.000     2026-03-06 17:14:40Z
     - BREAKING: New command-line interface, old --config/--dir/--debug flags removed

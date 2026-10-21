@@ -11,3 +11,10 @@ dist.ini
 eg
 t
 README.md
+.claude
+.github
+.karr
+.worktreeinclude
+CLAUDE.md
+.build
+blib

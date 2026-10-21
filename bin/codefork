@@ -5,8 +5,6 @@ our $VERSION = '1.001';
 
 use strict;
 use warnings;
-use FindBin;
-use lib $FindBin::Dir . "/../lib";
 use App::codefork;
 
 App::codefork->run(@ARGV);
