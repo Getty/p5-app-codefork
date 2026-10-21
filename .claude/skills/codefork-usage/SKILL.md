@@ -1,5 +1,5 @@
 ---
-name: codefork Usage
+name: codefork-usage
 description: Drive the codefork CLI to rename a project/module/namespace across a directory tree via diff-first workflow
 trigger: when the user asks to fork, rename, or rebrand a codebase (filenames + contents), or mentions codefork / fork.conf
 category: tool

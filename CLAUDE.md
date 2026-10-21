@@ -1,52 +1,41 @@
-# CLAUDE.md
+# App-codefork
 
-Guidance for Claude Code when working on **App::codefork** (`codefork` CLI).
+Rewrites a directory tree for forking a codebase: it renames files and rewrites their
+content, driven by a `fork.conf` with one rule per line — `from|to` (regex, names and
+content), `from%to` (whole word, content only). Diff-first: bare `codefork` only
+prints a unified diff, `codefork apply` writes, `codefork output file` saves the diff.
 
-## What the app does
+Released to CPAN as `App-codefork` (last release `1.000`, the diff-first rewrite),
+built with `Dist::Zilla` via `[@Author::GETTY]`; the release also pushes the
+`raudssus/codefork` Docker image. One Moo class (`App::codefork`) plus the thin
+`codefork` script. Development happens on `main`; `master` is the 2014 history.
 
-Systematic text replacements across a directory tree — both filenames and
-file contents. Intended for forking a codebase by renaming a project,
-module, or namespace.
+The architecture, the config format, the rule order and the traps live in skill
+`app-codefork-core`; how an agent *uses* the CLI on another tree lives in skill
+`codefork-usage` — neither is repeated here.
 
-**Safe by default**: without arguments it only prints a diff preview, no writes.
+## Delegation
 
-## Architecture (short)
+Delegate behavior-relevant code to the right agent instead of touching it yourself —
+the principle and the lane boundaries are in `.claude/rules/app-codefork-rules.md`.
 
-- `lib/App/codefork.pm` — Moo class, all the logic
-  - `collect_changes` → plans changes (pure computation)
-  - `generate_diff` → unified diff from the collected changes
-  - `apply_changes` → writes to disk
-  - `run(@ARGV)` → CLI entry, dispatches `diff` / `apply` / `output`
-- `bin/codefork` — thin wrapper calling `App::codefork->run(@ARGV)`
-- `eg/conf` — example config
+| Task | Agent |
+|---|---|
+| Implement / refactor / debug behavior-relevant code | `app-codefork-worker` (default) |
+| Commits, `Changes`, card → done, pre-release audit | `app-codefork-release-manager` |
 
-## Config format (`fork.conf`)
+The agents carry their skills via `briefing.skills` (see `.claude/agents/`); the main
+agent delegates rather than loading them. Skill sources live under `.claude/skills/` —
+the `getty-*`, `perl-release-dist-ini` and karr skills are installed by skilletor
+(`.claude/skilletor.json`); `app-codefork-core` and `codefork-usage` are owned by this
+repo.
 
-- `from|to` — regex replacement (`s/from/to/g`) in filenames and contents
-- `from%to` — word-boundary replacement (only between non-alphanumeric chars)
-- Empty lines and lines without `|`/`%` are ignored
-
-## Rules when changing code
-
-- **Do not break the diff-based workflow**: `collect_changes` must return
-  changes as data structures before anything touches disk.
-- **`.git` / `.svn` stay excluded** (see `_collect_dir`).
-- **Debug** goes through `CODEFORK_DEBUG=1`, not flags.
-- **No new CLI flags**: the interface is positional
-  (`codefork [apply|output] [conf] [file]`). Pre-1.000 `--config`/`--dir`/`--debug`
-  were removed on purpose.
+Work is coordinated on the repo's `karr` board (`karr board`).
 
 ## Build & test
 
 ```bash
-prove -lv t/             # tests (load.t, basic.t)
-dzil test                # full Dist::Zilla test run
-dzil build               # build distribution
+prove -lr t/
+dzil test
+dzil build
 ```
-
-Releases use `[@Author::GETTY]` — see that bundle for version/Changes conventions.
-
-## POD convention
-
-Inline `=attr` / `=method` right next to the attribute/method definition
-(as already done in `codefork.pm`). Don't collect them at the end of the file.
