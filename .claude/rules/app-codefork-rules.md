@@ -23,7 +23,7 @@ and the CLI. `README.md` and `Changes` wording are not.
 
 ## Release
 
-The release also pushes the `raudssus/codefork` Docker image (`[Run::AfterRelease]`) — one
+The release also pushes the `raudssus/codefork` Docker image (`docker_image` in `dist.ini`) — one
 more reason it waits for the maintainer's go-ahead.
 
 ## Deviations from the house rules

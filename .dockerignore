@@ -3,7 +3,6 @@
 .dockerignore
 *.tar.gz
 App-codefork-*
-docker-release.sh
 Dockerfile
 Changes
 cpanfile

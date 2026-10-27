@@ -37,6 +37,11 @@ Revision history for App-codefork
     from there. From a checkout, run it as perl -Ilib bin/codefork.
   - When codefork refuses a plan it prints only the refusal and exits non-
     zero.
+  - The release builds, tags and pushes the Docker image through
+    Dist::Zilla::Plugin::Docker::API (docker_image in dist.ini) over the
+    container engine's HTTP API instead of shelling out to docker build /
+    docker push, so a release works against rootless Podman.
+    docker-release.sh is gone.
 
 1.000     2026-03-06 17:14:40Z
     - BREAKING: New command-line interface, old --config/--dir/--debug flags removed

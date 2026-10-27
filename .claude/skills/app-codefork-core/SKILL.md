@@ -16,7 +16,7 @@ change.
 | `bin/codefork` | thin wrapper: `App::codefork->run(@ARGV)`, plus the user POD |
 | `t/*.t` | load test; plan/diff/apply (`basic`), collisions, directories, the word rule, the output file, the config parsing, the CLI `run` — each on its own temp tree |
 | `eg/conf` | the sample config |
-| `Dockerfile`, `docker-release.sh`, `.dockerignore` | the `raudssus/codefork` image, pushed by `[Run::AfterRelease]` after a CPAN release |
+| `Dockerfile`, `.dockerignore` | the `raudssus/codefork` image, built from the built dist by `docker_image` in `dist.ini` and pushed on release |
 | `.claude/skills/codefork-usage` | how an agent *uses* the CLI on another tree — not about this code |
 
 ## The config format

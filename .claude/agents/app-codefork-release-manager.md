@@ -40,7 +40,8 @@ Run the audit when asked for a release readiness check. It is a report with file
 paths and findings, not a change to the world.
 
 1. **`dist.ini`** — `[@Author::GETTY]` with the house metadata header;
-   `[Run::AfterRelease]` pushes the `raudssus/codefork` image. The tarball carries every
+   `docker_image = raudssus/codefork` builds the image from the built dist and pushes
+   `latest`, the major and the version on release. The tarball carries every
    tracked file but `README.md` and `.karr` (the bundle default): `.claude/`, `CLAUDE.md`,
    `.github/`, the Docker files and `misc/agent-context/` ship on purpose — not a finding.
 2. **`cpanfile`** — `Moo`, `Path::Tiny`, `Text::Diff` at runtime, `Test::More` on
@@ -50,7 +51,8 @@ paths and findings, not a change to the world.
 4. **`Changes`** — `{{$NEXT}}` holds an entry for every user-visible change since the
    last release.
 5. **`LICENSE`** — committed (`Git::GatherDir` only sees tracked files).
-6. **`dzil build`** and **`dzil test --release`** — clean.
+6. **`dzil build`** and **`dzil test --release`** — clean. Both build the image too;
+   `DZIL_DOCKER_API_SKIP=1` skips the engine contact, `dzil release` refuses to run with it.
 
 **Never** `git push`, never tag, never `dzil release`, never upload to CPAN. A
 release is the maintainer's call, every time. Preparing it is your lane; running it
