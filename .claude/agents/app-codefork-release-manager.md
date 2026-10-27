@@ -40,8 +40,9 @@ Run the audit when asked for a release readiness check. It is a report with file
 paths and findings, not a change to the world.
 
 1. **`dist.ini`** — `[@Author::GETTY]` with the house metadata header; `[PruneFiles]`
-   keeps the Docker files, `.claude/`, `.worktreeinclude` and `.github/` out of the
-   tarball; `[Run::AfterRelease]` pushes the `raudssus/codefork` image.
+   keeps the Docker files and `README.md` out of the tarball; `[Run::AfterRelease]`
+   pushes the `raudssus/codefork` image. `.claude/`, `CLAUDE.md`, `.github/` and
+   `misc/agent-context/` ship on purpose (the bundle default) — not a finding.
 2. **`cpanfile`** — `Moo`, `Path::Tiny`, `Text::Diff` at runtime, `Test::More` on
    test; no `0` pins.
 3. **`$VERSION`** — `lib/App/codefork.pm` and `bin/codefork` carry the next unreleased
